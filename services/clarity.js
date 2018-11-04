@@ -22,12 +22,15 @@ const DATA = {
 let ALL_DATA = [];
 
 async function executeJourney(isHeadless, launchPage, credentials) {
+    console.log('Inside execute');
     let startTime = new Date();
 
     const browser = await puppeteer.launch({
         headless: isHeadless,
         args: ['--no-sandbox', '--disable-setuid-sandbox']
     });
+
+    console.log('Browser lunched');
 
     const page = await browser.newPage();
     await page.setRequestInterception(true);
@@ -44,6 +47,7 @@ async function executeJourney(isHeadless, launchPage, credentials) {
           interceptedRequest.continue();
     });
     await page.goto(launchPage, {waitUntil: 'networkidle0'});
+    console.log('Page launched!');
 
 
     await page.click(JOURNEY.LOGIN_FIELD);
@@ -54,6 +58,7 @@ async function executeJourney(isHeadless, launchPage, credentials) {
 
     await page.click(JOURNEY.LOGIN_BUTTON_FIELD);
     await page.waitForNavigation();
+    console.log('Navidated to 1nd pagwe');
 
     await updatePageDetails(page);
 
@@ -71,8 +76,10 @@ async function executeJourney(isHeadless, launchPage, credentials) {
         }
     }
     browser.close();
+    console.log('Browser cloased');
 
     let endTime = new Date();
+    console.log(ALL_DATA);
 
     // console.log('Elapsed Time', endTime.getTime() - startTime.getTime());
     return {data: ALL_DATA, timeTaken: parseInt((endTime.getTime() - startTime.getTime()), 10)/1000};
