@@ -1,0 +1,15 @@
+extends layout
+
+block content
+  h1= title
+  p Welcome to #{title}
+  // register form
+  div.form-group
+    h1 Time Taken #{timeElapsed} seconds
+    ul
+    each val in data
+        li
+            span #{val.name}
+            span #{val.startDate}
+            span #{val.status}
+            span #{val.pending}
