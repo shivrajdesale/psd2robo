@@ -58,7 +58,7 @@ async function executeJourney(isHeadless, launchPage, credentials) {
 
     await page.click(JOURNEY.LOGIN_BUTTON_FIELD);
     await page.waitForNavigation();
-    console.log('Navidated to 1nd pagwe');
+    console.log('Navigated to 2nd page');
 
     await updatePageDetails(page);
 
@@ -68,15 +68,17 @@ async function executeJourney(isHeadless, launchPage, credentials) {
     if(temp && temp.length > 0){
         numberOfPages = parseInt(temp[1], 10);
     }
+    console.log('Number of  pages', numberOfPages);
     if(numberOfPages){
         for(let i= 1; i < numberOfPages; i++){
             await page.click(JOURNEY.NEXT_BUTTON_FIELD);
             await page.waitForNavigation();
+            console.log('Navigated to page', i);
             await updatePageDetails(page);
         }
     }
     browser.close();
-    console.log('Browser cloased');
+    console.log('Browser closed');
 
     let endTime = new Date();
     console.log(ALL_DATA);
