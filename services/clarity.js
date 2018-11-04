@@ -25,7 +25,8 @@ async function executeJourney(isHeadless, launchPage, credentials) {
     let startTime = new Date();
 
     const browser = await puppeteer.launch({
-        headless: isHeadless
+        headless: isHeadless,
+        args: ['--no-sandbox', '--disable-setuid-sandbox']
     });
 
     const page = await browser.newPage();
