@@ -22,7 +22,7 @@ const DATA = {
 let ALL_DATA = [];
 
 async function executeJourney(isHeadless, launchPage, credentials) {
-    console.log('Inside execute');
+    // console.log('Inside execute');
     let startTime = new Date();
 
     const browser = await puppeteer.launch({
@@ -30,7 +30,7 @@ async function executeJourney(isHeadless, launchPage, credentials) {
         args: ['--no-sandbox', '--disable-setuid-sandbox']
     });
 
-    console.log('Browser lunched');
+    // console.log('Browser lunched');
 
     const page = await browser.newPage();
     await page.setRequestInterception(true);
@@ -47,7 +47,7 @@ async function executeJourney(isHeadless, launchPage, credentials) {
           interceptedRequest.continue();
     });
     await page.goto(launchPage, {waitUntil: 'networkidle0'});
-    console.log('Page launched!');
+    // console.log('Page launched!');
 
 
     await page.click(JOURNEY.LOGIN_FIELD);
@@ -58,7 +58,7 @@ async function executeJourney(isHeadless, launchPage, credentials) {
 
     await page.click(JOURNEY.LOGIN_BUTTON_FIELD);
     await page.waitForNavigation();
-    console.log('Navigated to 2nd page');
+    // console.log('Navigated to 2nd page');
 
     await updatePageDetails(page);
 
@@ -68,22 +68,22 @@ async function executeJourney(isHeadless, launchPage, credentials) {
     if(temp && temp.length > 0){
         numberOfPages = parseInt(temp[1], 10);
     }
-    console.log('Number of  pages', numberOfPages);
+    // console.log('Number of  pages', numberOfPages);
     if(numberOfPages){
         for(let i= 1; i < numberOfPages; i++){
             await page.click(JOURNEY.NEXT_BUTTON_FIELD);
             await page.waitForNavigation();
-            console.log('Navigated to page', i);
+            // console.log('Navigated to page', i);
             await updatePageDetails(page);
         }
     }
     browser.close();
-    console.log('Browser closed');
+    // console.log('Browser closed');
 
     let endTime = new Date();
-    console.log(ALL_DATA);
+    // console.log(ALL_DATA);
 
-    // console.log('Elapsed Time', endTime.getTime() - startTime.getTime());
+    console.log('Elapsed Time', endTime.getTime() - startTime.getTime());
     return {data: ALL_DATA, timeTaken: parseInt((endTime.getTime() - startTime.getTime()), 10)/1000};
 }
 
