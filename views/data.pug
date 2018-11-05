@@ -5,7 +5,15 @@ block content
   p Welcome to #{title}
   // register form
   div.form-group
-    h1 Time Taken #{timeElapsed} seconds
+    h1 Total Time Taken #{timeElapsed} seconds
+    h1 Browser Load Time #{browserLoadTime} seconds
+    #errors
+    if errors && errors.length
+      h2 Errors completed with errors in pages
+      ul
+      each err in errors
+        li
+          span #{err}
     ul
     each val in data
         li

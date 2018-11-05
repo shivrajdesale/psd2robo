@@ -14,7 +14,13 @@ router.post('/execute', async function(req, res, next){
   credentials.username = req.body.userid;
   credentials.password = req.body.password;
   let response = await executeJourney(isHeadless, indexPage, credentials);
-  res.render('data', { title: 'PSD2 Robo' , data: response.data, timeElapsed: response.timeTaken});
+  res.render('data', { 
+      title: 'PSD2 Robo' , 
+      data: response.data, 
+      errors: response.errors,
+      timeElapsed: response.timeTaken, 
+      browserLoadTime: response.browserLoadTime
+    });
 });
 
 module.exports = router;

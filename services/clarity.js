@@ -1,5 +1,8 @@
 const puppeteer = require('puppeteer');
 
+let ALL_DATA = [];
+let ERRORS = [];
+
 const JOURNEY = {
     LOGIN_FIELD: 'input[id="ppm_login_username"]',
     PASSWORD_FIELD: 'input[id="ppm_login_password"]',
@@ -7,84 +10,91 @@ const JOURNEY = {
     PAGINATION_INPUT_FIELD: 'table[id="portlet-table-timeadmin.timesheetBrowser"] div.ppm_gridcontent div input.ppm_field',
     NEXT_BUTTON_FIELD: 'button[id="nextPageButton"]'
 };
-//*table[id="portlet-table-timeadmin.timesheetBrowser"] div.ppm_gridcontent div input.ppm_field ppm_pagination_input
-//*[@id="d101597e167"]/div/text()[2]
-const DATA = {
-    LOGIN: 'superAdmin',
-    PASSWORD: 'superAdmin',
-    FULL_NAME: 'Name 16',
-    USER_NAME: 'user16',
-    USER_PASSWORD: 'password',
-    USER_ROLE: 'Manager',
-    USER_DESIGNATION: 'Manager'
-};
 
-let ALL_DATA = [];
-
+/**
+ * 
+ * @param {*} isHeadless 
+ * @param {*} launchPage 
+ * @param {*} credentials 
+ */
 async function executeJourney(isHeadless, launchPage, credentials) {
     // console.log('Inside execute');
-    let startTime = new Date();
+    let browserLoadedTime, startTime = new Date();
 
-    const browser = await puppeteer.launch({
-        headless: isHeadless,
-        args: ['--no-sandbox', '--disable-setuid-sandbox']
-    });
-
-    // console.log('Browser lunched');
-
-    const page = await browser.newPage();
-    await page.setRequestInterception(true);
-    page.on('request', interceptedRequest => {
-        if (interceptedRequest.url().endsWith('.png') || 
-            interceptedRequest.url().endsWith('.jpg') ||
-            interceptedRequest.url().endsWith('.svg') ||
-            interceptedRequest.url().endsWith('.gif')
-            // ||
-            // interceptedRequest.url().endsWith('.css')
-            )
-          interceptedRequest.abort();
-        else
-          interceptedRequest.continue();
-    });
-    await page.goto(launchPage, {waitUntil: 'networkidle0'});
-    // console.log('Page launched!');
-
-
-    await page.click(JOURNEY.LOGIN_FIELD);
-    await page.keyboard.type(credentials.username);
-
-    await page.click(JOURNEY.PASSWORD_FIELD);
-    await page.keyboard.type(credentials.password);
-
-    await page.click(JOURNEY.LOGIN_BUTTON_FIELD);
-    await page.waitForNavigation();
-    // console.log('Navigated to 2nd page');
-
-    await updatePageDetails(page);
-
-    const text = await page.evaluate(() => document.querySelector('table[id="portlet-table-timeadmin.timesheetBrowser"] div.ppm_gridcontent div input.ppm_field').getAttribute('aria-label'));
-
-    let numberOfPages, temp = text.split('of ');
-    if(temp && temp.length > 0){
-        numberOfPages = parseInt(temp[1], 10);
-    }
-    // console.log('Number of  pages', numberOfPages);
-    if(numberOfPages){
-        for(let i= 1; i < numberOfPages; i++){
-            await page.click(JOURNEY.NEXT_BUTTON_FIELD);
-            await page.waitForNavigation();
-            // console.log('Navigated to page', i);
-            await updatePageDetails(page);
+    try {
+        const browser = await puppeteer.launch({
+            headless: isHeadless,
+            args: ['--no-sandbox', '--disable-setuid-sandbox']
+        });
+    
+        // console.log('Browser lunched');
+    
+        const page = await browser.newPage();
+        await page.setRequestInterception(true);
+        page.on('request', interceptedRequest => {
+            if (interceptedRequest.url().endsWith('.png') || 
+                interceptedRequest.url().endsWith('.jpg') ||
+                interceptedRequest.url().endsWith('.svg') ||
+                interceptedRequest.url().endsWith('.gif')
+                // ||
+                // interceptedRequest.url().endsWith('.css')
+                )
+              interceptedRequest.abort();
+            else
+              interceptedRequest.continue();
+        });
+        await page.goto(launchPage, {waitUntil: 'networkidle0'});
+        // console.log('Page launched!');
+        browserLoadedTime = new Date();
+    
+        await page.click(JOURNEY.LOGIN_FIELD);
+        await page.keyboard.type(credentials.username);
+    
+        await page.click(JOURNEY.PASSWORD_FIELD);
+        await page.keyboard.type(credentials.password);
+    
+        await page.click(JOURNEY.LOGIN_BUTTON_FIELD);
+        await page.waitForNavigation();
+        // console.log('Navigated to 2nd page');
+    
+        await updatePageDetails(page);
+    
+        const text = await page.evaluate(() => document.querySelector('table[id="portlet-table-timeadmin.timesheetBrowser"] div.ppm_gridcontent div input.ppm_field').getAttribute('aria-label'));
+    
+        let numberOfPages, temp = text.split('of ');
+        if(temp && temp.length > 0){
+            numberOfPages = parseInt(temp[1], 10);
         }
+        // console.log('Number of  pages', numberOfPages);
+        if(numberOfPages){
+            for(let i= 1; i < numberOfPages; i++){
+                try {
+                    await page.click(JOURNEY.NEXT_BUTTON_FIELD);
+                    await page.waitForNavigation();
+                    // console.log('Navigated to page', i);
+                    await updatePageDetails(page);
+                } catch(e) {
+                    ERRORS.push('Error in step' + i);
+                }
+                
+            }
+        }
+        browser.close();
+    } catch (e){
+        ERRORS.push('System exception occured. Please try again!')
     }
-    browser.close();
     // console.log('Browser closed');
 
     let endTime = new Date();
     // console.log(ALL_DATA);
 
-    console.log('Elapsed Time', endTime.getTime() - startTime.getTime());
-    return {data: ALL_DATA, timeTaken: parseInt((endTime.getTime() - startTime.getTime()), 10)/1000};
+    // console.log('Elapsed Time', endTime.getTime() - startTime.getTime());
+    return {   
+        data: ALL_DATA,
+        errors: ERRORS,
+        timeTaken: parseInt((endTime.getTime() - startTime.getTime()), 10)/1000,
+        browserLoadTime: (browserLoadedTime.getTime() - startTime.getTime())/1000
+    };
 }
 
 async function updatePageDetails(page) {
