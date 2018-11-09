@@ -1,16 +1,10 @@
 const puppeteer = require('puppeteer');
 var journeySelector = require('./journey_selector');
+var browser = "";
+let browserRunning = false;
 
 let ALL_DATA = [];
 let ERRORS = [];
-
-const JOURNEY = {
-    LOGIN_FIELD: 'input[id="ppm_login_username"]',
-    PASSWORD_FIELD: 'input[id="ppm_login_password"]',
-    LOGIN_BUTTON_FIELD: 'input[id="ppm_login_button"]',
-    PAGINATION_INPUT_FIELD: 'table[id="portlet-table-timeadmin.timesheetBrowser"] div.ppm_gridcontent div input.ppm_field',
-    NEXT_BUTTON_FIELD: 'button[id="nextPageButton"]'
-};
 
 /**
  *
@@ -18,18 +12,18 @@ const JOURNEY = {
  * @param {*} launchPage
  * @param {*} credentials
  */
-async function executeJourney(isHeadless, launchPage, credentials) {
+async function executeJourney(journey, isHeadless, data) {
     // console.log('Inside execute');
     var browserLoadedTime, startTime = new Date();
 
     try {
-        const browser = await puppeteer.launch({
+        browser = await puppeteer.launch({
             headless: isHeadless,
             args: ['--no-sandbox', '--disable-setuid-sandbox']
         });
-
         // console.log('Browser lunched');
-        const journeyDetails = journeySelector('LOGIN');
+        const journeyDetails = await journeySelector(journey);
+
         const page = await browser.newPage();
         await page.setRequestInterception(true);
         page.on('request', interceptedRequest => {
@@ -44,38 +38,47 @@ async function executeJourney(isHeadless, launchPage, credentials) {
             else
               interceptedRequest.continue();
         });
-        await page.goto(launchPage, {waitUntil: 'networkidle0'});
+        await page.goto(journeyDetails.url, {waitUntil: 'networkidle0'});
         // console.log('Page launched!');
-        browserLoadedTime = new Date();
 
-        await page.click(JOURNEY.LOGIN_FIELD);
-        await page.keyboard.type(credentials.username);
-
-        await page.click(JOURNEY.PASSWORD_FIELD);
-        await page.keyboard.type(credentials.password);
-
-        await page.click(JOURNEY.LOGIN_BUTTON_FIELD);
+        if(journeyDetails.input_sequence){
+          for(const step of journeyDetails.input_sequence){
+            await executeStep(page, step, data);
+          }
+        }
         await page.waitForNavigation();
-        // console.log('Navigated to 2nd page');
-
         await updatePageDetails(page);
-
         browser.close();
     } catch (e){
         ERRORS.push('System exception occured. Please try again!')
     }
-    // console.log('Browser closed');
 
-    let endTime = new Date();
-    // console.log(ALL_DATA);
-
-    // console.log('Elapsed Time', endTime.getTime() - startTime.getTime());
     return {
         data: ALL_DATA,
         errors: ERRORS,
-        timeTaken: parseInt((endTime.getTime() - startTime.getTime()), 10)/1000,
-        browserLoadTime: (browserLoadedTime.getTime() - startTime.getTime())/1000
+        timeTaken: "",
+        browserLoadTime: ""
     };
+}
+
+async function startBrowser(mode){
+  if(!browserRunning){
+    browser = await puppeteer.launch({
+        headless: isHeadless,
+        args: ['--no-sandbox', '--disable-setuid-sandbox']
+    });
+    browserRunning = true;
+  }
+  return browser;
+}
+
+async function executeStep(page, step, data){
+  if(step.action == "ENTER_VALUE"){
+    await page.click(step.selector);
+    await page.keyboard.type(data[step.param_name]);
+  }else if(step.action == "CLICK"){
+    await page.click(step.selector);
+  }
 }
 
 async function updatePageDetails(page) {

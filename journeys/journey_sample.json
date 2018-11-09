@@ -1,0 +1,24 @@
+{
+  "url" : "",
+  "input_elements" : [
+    {
+      "selector" : "'input[id=\"ppm_login_username\"]'",
+      "actions" : "ENTER_VALUE",
+      "param_name" : "username"
+    },{
+      "selector" : "'input[id=\"ppm_login_password\"]'",
+      "action" : "ENTER_VALUE",
+      "param_name" : "password"
+    },{
+      "selector" : "input[id=\"ppm_login_button\"]",
+      "action" : "CLICK"
+    }
+  ],
+  "output_elements" : [
+    {
+      "selector" : ""
+    },{
+      "selector" : ""
+    }
+  ]
+}

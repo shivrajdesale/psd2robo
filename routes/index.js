@@ -1,5 +1,5 @@
 var express = require('express');
-var executeJourney = require('../services/clarity');
+var executeJourney = require('../services/executor');
 var router = express.Router();
 
 /* GET home page. */
@@ -8,17 +8,18 @@ router.get('/', function(req, res, next) {
 });
 
 router.post('/execute', async function(req, res, next){
-  let indexPage = req.body.indexPage, 
+  let indexPage = req.body.indexPage,
   isHeadless = req.body.mode === 'Headless' ? true : false,
-  credentials = {};
-  credentials.username = req.body.userid;
-  credentials.password = req.body.password;
-  let response = await executeJourney(isHeadless, indexPage, credentials);
-  res.render('data', { 
-      title: 'PSD2 Robo' , 
-      data: response.data, 
+  data = {};
+  data.username = req.body.userid;
+  data.password = req.body.password;
+  let response = await executeJourney('LOGIN',isHeadless, data);
+  //let response = await executeJourney(isHeadless, indexPage, data);
+  res.render('data', {
+      title: 'PSD2 Robo' ,
+      data: response.data,
       errors: response.errors,
-      timeElapsed: response.timeTaken, 
+      timeElapsed: response.timeTaken,
       browserLoadTime: response.browserLoadTime
     });
 });
