@@ -1,5 +1,4 @@
 const puppeteer = require('puppeteer');
-var journeySelector = require('./journey_selector');
 
 let ALL_DATA = [];
 let ERRORS = [];
@@ -20,7 +19,7 @@ const JOURNEY = {
  */
 async function executeJourney(isHeadless, launchPage, credentials) {
     // console.log('Inside execute');
-    var browserLoadedTime, startTime = new Date();
+    let browserLoadedTime, startTime = new Date();
 
     try {
         const browser = await puppeteer.launch({
@@ -29,7 +28,7 @@ async function executeJourney(isHeadless, launchPage, credentials) {
         });
 
         // console.log('Browser lunched');
-        const journeyDetails = journeySelector('LOGIN');
+
         const page = await browser.newPage();
         await page.setRequestInterception(true);
         page.on('request', interceptedRequest => {
@@ -60,6 +59,26 @@ async function executeJourney(isHeadless, launchPage, credentials) {
 
         await updatePageDetails(page);
 
+        const text = await page.evaluate(() => document.querySelector('table[id="portlet-table-timeadmin.timesheetBrowser"] div.ppm_gridcontent div input.ppm_field').getAttribute('aria-label'));
+
+        let numberOfPages, temp = text.split('of ');
+        if(temp && temp.length > 0){
+            numberOfPages = parseInt(temp[1], 10);
+        }
+        // console.log('Number of  pages', numberOfPages);
+        if(numberOfPages){
+            for(let i= 1; i < numberOfPages; i++){
+                try {
+                    await page.click(JOURNEY.NEXT_BUTTON_FIELD);
+                    await page.waitForNavigation();
+                    // console.log('Navigated to page', i);
+                    await updatePageDetails(page);
+                } catch(e) {
+                    ERRORS.push('Error in step' + i);
+                }
+
+            }
+        }
         browser.close();
     } catch (e){
         ERRORS.push('System exception occured. Please try again!')
