@@ -41,13 +41,13 @@ async function executeJourney(journey, isHeadless, data) {
         await page.goto(journeyDetails.url, {waitUntil: 'networkidle0'});
         // console.log('Page launched!');
 
-        if(journeyDetails.input_sequence){
-          for(const step of journeyDetails.input_sequence){
+        if(journeyDetails.action_sequence){
+          for(const step of journeyDetails.action_sequence){
             await executeStep(page, step, data);
           }
         }
         await page.waitForNavigation();
-        await updatePageDetails(page);
+        await collectdata(page);
         browser.close();
     } catch (e){
         ERRORS.push('System exception occured. Please try again!')
@@ -81,7 +81,9 @@ async function executeStep(page, step, data){
   }
 }
 
-async function updatePageDetails(page) {
+async function collectdata(page) {
+    
+
     let items = await page.evaluate(() => document.querySelectorAll('table[id="portlet-table-timeadmin.timesheetBrowser"] table tbody tr'));
     if(items && Object.keys(items).length){
         for(let i = 1; i <= Object.keys(items).length; i++){

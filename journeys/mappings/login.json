@@ -1,6 +1,6 @@
 {
   "url" : "https://claritymobile.fs.capgemini.com/",
-  "input_sequence" : [
+  "action_sequence" : [
     {
       "selector" : "input[id=\"ppm_login_username\"]",
       "action" : "ENTER_VALUE",
@@ -14,11 +14,49 @@
       "action" : "CLICK"
     }
   ],
-  "output_sequence" : [
-    {
-      "selector" : ""
-    },{
-      "selector" : ""
-    }
-  ]
+  "data_collection" : {
+
+      "scope" : "table[id=\"portlet-table-timeadmin.timesheetBrowser\"] div.ppm_gridcontent",
+      "type" : "array",
+      "elements" : [
+        {
+          "selector" : "td[column=\"8\"]",
+          "name" : "name"
+        },{
+          "selector" : "td[column=\"10\"]",
+          "name" : "start_date"
+        },{
+          "selector" : "td[column=\"11\"]",
+          "name" : "status"
+        },{
+          "selector" : "td[column=\"14\"]",
+          "name" : "hours"
+        }
+      ],
+      "parent" : {
+          "selector" : "table tbody.ppm_grid_content tr",
+          "parent" : null
+      },
+      "pagination" : {
+        "page_count" : {
+          "selector" : "input",
+          "retriever" : {
+            "attribute" : "aria-label",
+            "pre_val" : "of ",
+            "post_val" : " "
+          },
+          "parent" : {
+            "selector" :"div.ppm_pagination",
+            "parent" : null
+          }
+        },
+        "action" : {
+          "selector" : "button[id=\"nextPageButton\"]",
+          "parent" : {
+            "selector" : "div.ppm_pagination",
+            "parent" : null
+          }
+        }
+      }
+  }
 }
