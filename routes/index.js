@@ -1,5 +1,6 @@
 var express = require('express');
 var executeJourney = require('../services/executor');
+var journeySelector = require('../services/journey_selector');
 var router = express.Router();
 
 /* GET home page. */
@@ -13,7 +14,8 @@ router.post('/execute', async function(req, res, next){
   data = {};
   data.username = req.body.userid;
   data.password = req.body.password;
-  let response = await executeJourney('LOGIN',isHeadless, data);
+  let journey = await journeySelector('LOGIN')
+  let response = await executeJourney(journey,isHeadless, data);
   //let response = await executeJourney(isHeadless, indexPage, data);
   res.render('data', {
       title: 'PSD2 Robo' ,

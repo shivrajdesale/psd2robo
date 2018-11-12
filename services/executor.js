@@ -2,6 +2,7 @@ const puppeteer = require('puppeteer');
 var journeySelector = require('./journey_selector');
 var browser = "";
 let browserRunning = false;
+let journey = {};
 
 let ALL_DATA = [];
 let ERRORS = [];
@@ -12,17 +13,16 @@ let ERRORS = [];
  * @param {*} launchPage
  * @param {*} credentials
  */
-async function executeJourney(journey, isHeadless, data) {
+async function executeJourney(journeyDetails, isHeadless, data) {
     // console.log('Inside execute');
     var browserLoadedTime, startTime = new Date();
-
+    journey = journeyDetails;
     try {
         browser = await puppeteer.launch({
             headless: isHeadless,
             args: ['--no-sandbox', '--disable-setuid-sandbox']
         });
         // console.log('Browser lunched');
-        const journeyDetails = await journeySelector(journey);
 
         const page = await browser.newPage();
         await page.setRequestInterception(true);
@@ -38,11 +38,11 @@ async function executeJourney(journey, isHeadless, data) {
             else
               interceptedRequest.continue();
         });
-        await page.goto(journeyDetails.url, {waitUntil: 'networkidle0'});
+        await page.goto(journey.url, {waitUntil: 'networkidle0'});
         // console.log('Page launched!');
 
-        if(journeyDetails.action_sequence){
-          for(const step of journeyDetails.action_sequence){
+        if(journey.action_sequence){
+          for(const step of journey.action_sequence){
             await executeStep(page, step, data);
           }
         }
@@ -82,7 +82,7 @@ async function executeStep(page, step, data){
 }
 
 async function collectdata(page) {
-    
+
 
     let items = await page.evaluate(() => document.querySelectorAll('table[id="portlet-table-timeadmin.timesheetBrowser"] table tbody tr'));
     if(items && Object.keys(items).length){
