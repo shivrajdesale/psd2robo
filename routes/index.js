@@ -14,8 +14,8 @@ router.post('/execute', async function(req, res, next){
   data = {};
   data.username = req.body.userid;
   data.password = req.body.password;
-  let journey = await journeySelector('LOGIN')
-  let response = await executeJourney(journey,isHeadless, data);
+  let journey = await journeySelector('LOGIN');
+  let response = await executeJourney(journey, isHeadless, data);
   //let response = await executeJourney(isHeadless, indexPage, data);
   res.render('data', {
       title: 'PSD2 Robo' ,

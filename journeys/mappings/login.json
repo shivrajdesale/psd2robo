@@ -17,14 +17,13 @@
   "data_collection" : {
 
       "scope" : "table[id=\"portlet-table-timeadmin.timesheetBrowser\"] div.ppm_gridcontent",
-      "type" : "array",
       "elements" : [
         {
           "selector" : "td[column=\"8\"]",
           "name" : "name"
         },{
           "selector" : "td[column=\"10\"]",
-          "name" : "start_date"
+          "name" : "startDate"
         },{
           "selector" : "td[column=\"11\"]",
           "name" : "status"
@@ -34,8 +33,9 @@
         }
       ],
       "parent" : {
-          "selector" : "table tbody.ppm_grid_content tr",
-          "parent" : null
+          "selector" : "table.ppm_grid tbody.ppm_grid_content tr",
+          "parent" : null,
+          "type" : "array"
       },
       "pagination" : {
         "page_count" : {
