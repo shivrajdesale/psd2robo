@@ -130,22 +130,20 @@ async function rselector(page,element){
 }
 
 async function getData(page){
-   let value = {};
-   if(journey.data_collection.elements){
-     let parent = journey.data_collection.parent ? await rselector(page,journey.data_collection.parent) : data_collection_scope;
-     if(! (parent instanceof Array ) ){
-       parent = [parent];
-     }
+  if(journey.data_collection.elements){
+    let parent = journey.data_collection.parent ? await rselector(page,journey.data_collection.parent) : data_collection_scope;
+    if(! (parent instanceof Array ) ){
+      parent = [parent];
+    }
 
-     for(let element of parent){
-       var item = {};
-       for(let selector of journey.data_collection.elements){
-         item[selector.name] = await element.$eval(selector.selector, n => {n.innerText.trim() + " "});
-       }
-       ALL_DATA.push(item);
-     }
-   }
-   return value;
+    for(let element of parent){
+      var item = {};
+      for(let selector of journey.data_collection.elements){
+        item[selector.name] = await element.$eval(selector.selector, n => n.innerText.trim());
+      }
+      ALL_DATA.push(item);
+    }
+  }
 }
 
 module.exports = executeJourney;
