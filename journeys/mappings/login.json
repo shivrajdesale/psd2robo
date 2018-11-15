@@ -14,6 +14,24 @@
       "action" : "CLICK"
     }
   ],
+  "error_collection" : {
+    "scope" : "body",
+    "elements" :[
+      {
+        "selector" : ".ppm_login_msg",
+        "retriever" : {
+          "post_val" : ":"
+        },
+        "name":"error_code"
+      },{
+        "selector" : ".ppm_login_msg",
+        "retriever" : {
+          "pre_val" : ":"
+        },
+        "name":"error_message"
+      }
+    ]
+  },
   "data_collection" : {
 
       "scope" : "table[id=\"portlet-table-timeadmin.timesheetBrowser\"] div.ppm_gridcontent",
