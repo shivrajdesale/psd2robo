@@ -85,18 +85,26 @@ async function executeStep(page, step, data){
 async function collectdata(page) {
     data_collection_scope = await page.$(journey.data_collection.scope);
 
-    if(journey.data_collection.elements){
-      let parent = journey.data_collection.parent ? await rselector(page,journey.data_collection.parent) : data_collection_scope;
-      if(! (parent instanceof Array ) ){
-        parent = [parent];
-      }
+    await collectCurrentPageData(page);
 
-      for(let element of parent){
-        var item = {};
-        for(let selector of journey.data_collection.elements){
-          item[selector.name] = await element.$eval(selector.selector, n => n.innerText.trim());
+    //show alll temp code
+    // let showAllButton = await page.$$('.ppm_filter_section .ppm_button_bar button');
+    // if(showAllButton && showAllButton.length > 1){
+    //   showAllButton = showAllButton[1];
+    //   await showAllButton.click();
+    //   await page.waitForNavigation();
+    // }
+    //
+
+    if(journey.data_collection.pagination){
+      const pageCount = await getPageCount(page);
+      if(pageCount > 1){
+        const nextButton = await rselector(journey.data_collection.pagination.action);
+        if(nextButton){
+          await nextButton.click();
+          await page.waitForNavigation();
+          await collectCurrentPageData(page);
         }
-        ALL_DATA.push(item);
       }
     }
 
@@ -123,13 +131,38 @@ async function rselector(page,element){
     scope = data_collection_scope;
   }
   if(element.type == "array"){
-    return await scope.$$(element.selector);
+    scope = await scope.$$(element.selector);
   }else{
-    return await scope.$(element.selector);
+    scope = await scope.$(element.selector);
   }
+  return scope;
 }
 
-async function getData(page){
+async function getPageCount(page){
+  let pageCount = 1;
+  if(journey.data_collection.pagination.page_count){
+    const page_count = journey.data_collection.pagination.page_count;
+    const parent = page_count.parent ? await rselector(page,page_count.parent):data_collection_scope;
+    let retriever = page_count.retriever && page_count.retriever.attribute ? "attribute" : "innerText";
+    if(retriever == "attribute"){
+      pageCount = await parent.$eval(page_count.selector,n > n.getAttribute(page_count.retriever.attribute).trim());
+    }else{
+      pageCount = await parent.$eval(page_count.selector,n > n.innerText.trim());
+    }
+    if(page_count.retriever){
+      if(page_count.retriever.pre_val){
+        let preCount = pageCount.split(page_count.retriever.pre_val);
+        pageCount = preCount.length > 1 ? preCount[1]:preCount[0];
+      }
+      if(page_count.retriever.post_val){
+        pageCount = pageCount.split(page_count.retriever.post_val)[0];
+      }
+    }
+  }
+  return pageCount;
+}
+
+async function collectCurrentPageData(page){
   if(journey.data_collection.elements){
     let parent = journey.data_collection.parent ? await rselector(page,journey.data_collection.parent) : data_collection_scope;
     if(! (parent instanceof Array ) ){
