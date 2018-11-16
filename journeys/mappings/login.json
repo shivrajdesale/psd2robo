@@ -24,7 +24,7 @@
         },
         "name":"error_code"
       },{
-        "selector" : ".ppm_login_msg",
+        "selector" : "td.ppm_login_msg > div > div",
         "retriever" : {
           "pre_val" : ":"
         },

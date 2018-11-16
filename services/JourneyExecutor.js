@@ -1,8 +1,6 @@
 const puppeteer = require('puppeteer');
 let journey = {};
 let data_collection_scope = "";
-let ALL_DATA = [];
-let ERRORS = [];
 
 const JOURNEY = {
     LOGIN_FIELD: 'input[id="ppm_login_username"]',
@@ -16,6 +14,8 @@ const JOURNEY = {
 class JourneyExecutor {
 
     static async executeFromPool(browserInstance, data, journeyParam){
+        let ALL_DATA = [];
+        let ERRORS = [];
         journey = journeyParam;
 
         let browser = browserInstance.browser,
@@ -30,7 +30,7 @@ class JourneyExecutor {
             }
 
             await page.waitForNavigation();
-            await this.collectdata(page);
+            ALL_DATA = await this.collectdata(page);
 
             // const text = await page.evaluate(() => document.querySelector('table[id="portlet-table-timeadmin.timesheetBrowser"] div.ppm_gridcontent div input.ppm_field').getAttribute('aria-label'));
             //
@@ -52,7 +52,7 @@ class JourneyExecutor {
             // }
             await page.click(JOURNEY.LOGOUT_FIELD);
         } catch (e){
-            await this.collecterror(page);
+            ERRORS = await this.collecterror(page);
             //ERRORS.push('System exception occured. Please try again!')
         }
 
@@ -65,25 +65,30 @@ class JourneyExecutor {
     }
 
     static async collecterror(page){
-      data_collection_scope = await page.$(journey.error_collection.scope);
-      if(journey.error_collection.elements){
-        let parent = journey.error_collection.parent ? await this.rselector(page,journey.error_collection.parent) : data_collection_scope;
-        if(! (parent instanceof Array ) ){
-          parent = [parent];
-        }
+      let errors = [];
+     if(journey.error_collection.elements){
+       try{
+         let item = {};
+         for(let selector of journey.error_collection.elements){
+           let fetchedValue = "";
+           if(selector.retriever && selector.retriever.attribute){
+             let element = await page.$(selector.selector);
+             if(element)
+               item[selector.name] = await element.getProperty(selector.retriever.attribute);
+           }else{
+             fetchedValue = await page.$eval(selector.selector, n => n.innerText);
+           }
+           item[selector.name] = (fetchedValue && selector.retriever) ? this.getParamValue(fetchedValue,selector.retriever) : fetchedValue.trim();
+         }
+         errors.push(item);
+       }catch(e){
 
-        for(let element of parent){
-          var item = {};
-          for(let selector of journey.error_collection.elements){
-            item[selector.name] = await element.$eval(selector.selector, n => n.innerText().trim());
-          }
-          ERRORS.push(item);
-        }
+       }
       }
+      return errors;
     }
 
-    static getParamValue(element, retriever){
-      value = element.innerText();
+    static getParamValue(value, retriever){
       if(retriever){
         if(retriever.pre_val){
           value = value.split(retriever.pre_val);
@@ -92,17 +97,16 @@ class JourneyExecutor {
         if(retriever.post_val){
           value = value.split(retriever.post_val)[0];
         }
-      }else{
-        value = element.innerText();
       }
       return value.trim();
     }
 
     static async collectdata(page) {
+      let data = [];
       data_collection_scope = await page.$(journey.data_collection.scope);
 
-      await this.collectCurrentPageData(page);
-
+      let currentPageData = await this.collectCurrentPageData(page);
+      data = data.concat(currentPageData);
       //show alll temp code
       // let showAllButton = await page.$$('.ppm_filter_section .ppm_button_bar button');
       // if(showAllButton && showAllButton.length > 1){
@@ -112,17 +116,19 @@ class JourneyExecutor {
       // }
       //
 
-      if(journey.data_collection.pagination){
-        const pageCount = await this.getPageCount(page);
-        if(pageCount > 1){
-          const nextButton = await this.rselector(journey.data_collection.pagination.action);
-          if(nextButton){
-            await nextButton.click();
-            await page.waitForNavigation();
-            await collectCurrentPageData(page);
-          }
-        }
-      }
+      // if(journey.data_collection.pagination){
+      //   const pageCount = await this.getPageCount(page);
+      //   if(pageCount > 1){
+      //     const nextButton = await this.rselector(journey.data_collection.pagination.action);
+      //     if(nextButton){
+      //       await nextButton.click();
+      //       await page.waitForNavigation();
+      //       await collectCurrentPageData(page);
+      //     }
+      //   }
+      // }
+
+      return data;
     }
 
     static async executeStep(page, step, data){
@@ -151,6 +157,7 @@ class JourneyExecutor {
     }
 
     static async collectCurrentPageData(page){
+      let collected_data = [];
       if(journey.data_collection.elements){
         let parent = journey.data_collection.parent ? await this.rselector(page,journey.data_collection.parent) : data_collection_scope;
         if(! (parent instanceof Array ) ){
@@ -162,9 +169,10 @@ class JourneyExecutor {
           for(let selector of journey.data_collection.elements){
             item[selector.name] = await element.$eval(selector.selector, n => n.innerText.trim());
           }
-          ALL_DATA.push(item);
+          collected_data.push(item);
         }
       }
+      return collected_data;
     }
 
     static async rselector(page,element){

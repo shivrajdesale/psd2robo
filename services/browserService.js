@@ -10,7 +10,7 @@ function getBrowserFromPool(){
 async function initializeBrowserPool(){
     let i = BROWSER_POOL.length;
     while(i < 5) {
-        let browserInstance = await getBrowser(false, 'https://clarity.fs.capgemini.com/');
+        let browserInstance = await getBrowser(false, 'https://claritymobile.fs.capgemini.com/');
         BROWSER_POOL.push(browserInstance);
         i++;
     }

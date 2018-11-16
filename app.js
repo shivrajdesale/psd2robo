@@ -13,7 +13,7 @@ var app = express();
 
 let displayBrowser = process.argv[2] || false;
 
-BrowserPool.initializeBrowserPool(!displayBrowser, 'https://clarity.fs.capgemini.com/');
+BrowserPool.initializeBrowserPool(!displayBrowser, 'https://claritymobile.fs.capgemini.com/');
 
 app.use(bodyParser.json()); // support json encoded bodies
 app.use(bodyParser.urlencoded({ extended: true })); // support encoded bodies
