@@ -18,7 +18,7 @@ router.get('/slow', function(req, res, next) {
 });
 
 router.post('/execute', async function(req, res, next){
-  let indexPage = 'https://claritymobile.fs.capgemini.com/',
+  let indexPage = 'https://clarity.fs.capgemini.com/',
   credentials = {};
   credentials.username = req.body.userid;
   credentials.password = req.body.password;

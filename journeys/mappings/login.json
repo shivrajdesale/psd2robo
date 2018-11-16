@@ -18,7 +18,7 @@
     "scope" : "body",
     "elements" :[
       {
-        "selector" : ".ppm_login_msg",
+        "selector" : "td.ppm_login_msg > div > div",
         "retriever" : {
           "post_val" : ":"
         },

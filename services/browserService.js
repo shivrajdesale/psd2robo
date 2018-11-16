@@ -10,7 +10,7 @@ function getBrowserFromPool(){
 async function initializeBrowserPool(){
     let i = BROWSER_POOL.length;
     while(i < 5) {
-        let browserInstance = await getBrowser(false, 'https://claritymobile.fs.capgemini.com/');
+        let browserInstance = await getBrowser(false, 'https://clarity.fs.capgemini.com/');
         BROWSER_POOL.push(browserInstance);
         i++;
     }
@@ -22,11 +22,11 @@ async function getBrowser(isHeadless, launchPage){
             headless: isHeadless,
             args: ['--no-sandbox', '--disable-setuid-sandbox']
         });
-        
+
         const page = await browser.newPage();
         await page.setRequestInterception(true);
         page.on('request', interceptedRequest => {
-            if (interceptedRequest.url().endsWith('.png') || 
+            if (interceptedRequest.url().endsWith('.png') ||
             interceptedRequest.url().endsWith('.jpg') ||
             interceptedRequest.url().endsWith('.svg') ||
             interceptedRequest.url().endsWith('.gif'))

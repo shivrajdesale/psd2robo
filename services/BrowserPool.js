@@ -2,6 +2,7 @@ const puppeteer = require('puppeteer');
 
 const BROWSER_POOL = [];
 const MAX_LIMIT = 5;
+const ERRORS = [];
 
 class BrowserPool {
 
@@ -9,7 +10,7 @@ class BrowserPool {
         let browser;
         if (BROWSER_POOL.length > 0){
             browser = BROWSER_POOL.shift();
-        } 
+        }
         return browser;
     }
 
@@ -20,7 +21,7 @@ class BrowserPool {
             if(page){
                 await page.close();
             }
-    
+
             if(browser && BROWSER_POOL.length < MAX_LIMIT){
                 const newPage = await BrowserPool.launchLandingPage(browser, launchPage);
                 BROWSER_POOL.push({browser, page: newPage});
